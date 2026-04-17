@@ -13,7 +13,7 @@ Backend API for the Buchi pet adoption app.
 
 ## Environment
 
-Create `.env` from `.env.example` (or use compose defaults):
+Create `.env` from `.env.example`:
 
 - `PORT=3000`
 - `DATABASE_HOST=localhost`
@@ -21,6 +21,19 @@ Create `.env` from `.env.example` (or use compose defaults):
 - `DATABASE_USER=postgres`
 - `DATABASE_PASSWORD=123`
 - `DATABASE_NAME=buchi`
+- `DOG_API_KEY=<your_thedogapi_key>`
+
+Example:
+
+```env
+DOG_API_KEY=your_api_key_here
+PORT=3000
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=123
+DATABASE_NAME=buchi
+```
 
 ## Run Locally
 
@@ -30,15 +43,21 @@ npm run build
 npm run start:dev
 ```
 
+App base URL: `http://localhost:3000`
+
 ## Run with Docker
 
 ```bash
-docker-compose up --build
+docker compose down
+docker compose build --no-cache --pull
+docker compose up
 ```
 
 App: `http://localhost:3000`
 
 Uploads: `http://localhost:3000/uploads/<filename>`
+
+Docker PostgreSQL is exposed on host port `5433` (`5433:5432`), while the app talks to `postgres:5432` internally.
 
 ## Unit Tests
 
@@ -87,6 +106,20 @@ npm test
    - Returns:
      - `adopted_pet_types`
      - `weekly_adoption_requests` (week-start date to count map)
+
+## Current Request Flow
+
+1. `POST /create_pet` with `multipart/form-data` and one or more `photos` files.
+2. `POST /add_customer` to create or fetch existing customer by phone.
+3. `POST /adopt` using returned `customer_id` and `pet_id`.
+4. `GET /get_pets?limit=...` to confirm local-first merge behavior with external fallback.
+5. `GET /get_adoption_requests?from_date=...&to_date=...`.
+6. `POST /generate_report` with the same date range for weekly/type aggregates.
+
+Notes:
+- `create_pet` must be sent as `form-data`, not raw JSON.
+- `get_pets` supports multi-select filters as comma-separated query values.
+- The external fallback uses TheDogAPI when local results are below `limit`.
 
 ## Assessment Delivery Checklist
 

@@ -40,7 +40,7 @@ describe('PetService', () => {
     petRepository.find.mockResolvedValue([{ id: 'local-1', type: 'dog' }]);
     externalApiService.fetchPets.mockResolvedValue([{ id: 'remote-1', type: 'cat' }]);
 
-    const result = await service.getPets({ limit: 2, type: 'dog' });
+    const result = await service.getPets({ limit: 2, type: ['dog'] });
 
     expect(result).toEqual([
       { id: 'local-1', type: 'dog' },

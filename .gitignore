@@ -1,2 +1,8 @@
 node_modules
+dist
+coverage
+
+# Secrets — never commit
 .env
+.env.*
+!.env.example
